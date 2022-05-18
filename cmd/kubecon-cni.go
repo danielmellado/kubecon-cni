@@ -4,7 +4,10 @@ import (
 	"cni_plugin_demo/pkg/types"
 	"cni_plugin_demo/pkg/version"
 	"fmt"
+
 	"github.com/containernetworking/cni/pkg/skel"
+	cniTypes "github.com/containernetworking/cni/pkg/types"
+	current "github.com/containernetworking/cni/pkg/types/100"
 	cniVersion "github.com/containernetworking/cni/pkg/version"
 	"github.com/containernetworking/plugins/pkg/ns"
 )
@@ -18,13 +21,16 @@ func main() {
 		"KubeCon CNI "+version.Version)
 }
 
-func cmdAdd(args *skel.CmdArgs) (err error) {
-	n, err = types.LoadNetConf(args.StdinData)
+func cmdAdd(args *skel.CmdArgs) error {
+	n, err := types.LoadNetConf(args.StdinData)
 	if err != nil {
 		err = fmt.Errorf("Error parsing CNI configuration \"%s\": %s", args.StdinData, err)
-		return
+		return err
 	}
-	return nil
+	result := &current.Result{
+		CNIVersion: n.CNIVersion,
+	}
+	return cniTypes.PrintResult(result, n.CNIVersion)
 }
 
 func cmdDel(args *skel.CmdArgs) (err error) {
